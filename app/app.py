@@ -204,7 +204,7 @@ def fetch_customer():
                 customer_record = Customer.query.get(customer_id)
                 customer_dict = {'id': customer_record.id, 'firstname': customer_record.first_name,
                                  'lastname': customer_record.last_name, 'email': customer_record.email,
-                                 'cc_num': customer_record.ccn
+                                 'cc_num': customer_record.ccn, 'username': customer_record.username
                                 }
                 if customer_record:
                     return jsonify(customer_dict),200
@@ -214,7 +214,7 @@ def fetch_customer():
                 return jsonify({'Error': 'Invalid Request'}),400
 
 
-@app.route('/get/<int:cust_id>/', defaults = {'cust_id': 1}, methods = ['GET'])
+@app.route('/get/<cust_id>', methods = ['GET'])
 def get_customer(cust_id):
     token = request.headers.get('Authorization')
     if not token:
@@ -228,7 +228,7 @@ def get_customer(cust_id):
                 if customer_record:
                     customer_dict = {'id': customer_record.id, 'firstname': customer_record.first_name,
                                  'lastname': customer_record.last_name, 'email': customer_record.email,
-                                 'cc_num': customer_record.ccn
+                                 'cc_num': customer_record.ccn, 'username': customer_record.username
                                 }
                     return jsonify(customer_dict),200
                 else:
