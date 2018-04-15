@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block body %}
+ 
+<div class="block1">
+<form action = "/uploader" method = "POST" enctype = "multipart/form-data">
+	<h1>Result</h1>
+  	<h2>Here is an interesting quote for you: </h2>
+  	<p>
+		{{name}}
+  	</p>
+<!--      
+         <input type = "file" name = "file" />
+         <input type = "submit"/>
+
+<img src="http://www.naturalprogramming.com/images/smilingpython.gif">-->
+</div>
+{% endblock %}
