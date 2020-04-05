@@ -13,7 +13,6 @@ jobs:
         run: echo $(PWD)
       - name: Build Image
         run: docker build -t vulnerable-app .
-      - name: Run 
       - name: Install OWASP ZAP
         run: |
           mkdir -p /root/zap
