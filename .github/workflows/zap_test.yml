@@ -1,0 +1,38 @@
+name: ZAP-Test
+
+on:
+  push: 
+    branches: [ master ]
+
+jobs: 
+  build: 
+    runs-on: ubuntu-18.04
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Get working directory
+        run: echo $(PWD)
+      - name: Build Image
+        run: docker build -t vulnerable-app .
+      - name: Run 
+      - name: Install OWASP ZAP
+        run: |
+          mkdir -p /root/zap
+          cd /root/zap
+          wget -N https://github.com/zaproxy/zaproxy/releases/download/v2.9.0/ZAP_2.9.0_Linux.tar.gz
+          tar -zxvf ZAP_2.9.0_Linux.tar.gz
+          rm ZAP_2.9.0_Linux.tar.gz
+          cd ZAP_2.9.0/plugin
+          wget https://github.com/zaproxy/zap-extensions/releases/download/exportreport-v6/exportreport-alpha-6.zap
+          echo 'export PATH_ZAP_SH=/root/zap/ZAP_2.9.0/zap.sh' >> ~/.bashrc
+          echo 'export ZAP_PORT=8090' >> ~/.bashrc
+          echo 'sh -c "$PATH_ZAP_SH -daemon -host 0.0.0.0 -port $ZAP_PORT -configfile /root/zap/ZAP_2.9.0/conf" > /dev/null & ' > start-zap
+          echo 'sleep 40' >> start-zap
+          echo 'sh -c "$PATH_ZAP_SH -host 0.0.0.0 -port $ZAP_PORT -configfile /root/zap/ZAP_2.9.0/conf" > /dev/null & ' > start-gui-zap
+          echo 'sleep 40' >> start-gui-zap
+          echo 'pkill -f zap' > stop-zap
+          chmod +x start-zap
+          chmod +x start-gui-zap
+          chmod +x stop-zap
+          mv start-zap /usr/local/bin/start-zap
+          mv stop-zap /usr/local/bin/stop-zap
+          cd /root/
