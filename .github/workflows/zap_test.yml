@@ -33,3 +33,7 @@ jobs:
           chmod +x start-gui-zap
           chmod +x stop-zap
           echo $pwd
+      - name: Run Docker Container
+        run: docker run -d -p 5050:5050 vulnerable-app
+      - name: Run ZAP Daemon
+        run: ./zap/ZAP_2.9.0/zap.sh -daemon -host 0.0.0.0 -port 8090 -config api.addrs.addr.name=".*" -config api.addrs.addr.regex=true -config api.disablekey=true
