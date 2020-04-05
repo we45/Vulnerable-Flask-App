@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "venv/bin/python2.7",
+    "python.formatting.provider": "autopep8"
+}
