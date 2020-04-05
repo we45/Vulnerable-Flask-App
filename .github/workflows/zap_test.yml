@@ -32,6 +32,5 @@ jobs:
           chmod +x start-zap
           chmod +x start-gui-zap
           chmod +x stop-zap
-          mv start-zap /usr/local/bin/start-zap
-          mv stop-zap /usr/local/bin/stop-zap
           cd ./zap/
+          echo $pwd
