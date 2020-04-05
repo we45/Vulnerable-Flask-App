@@ -32,5 +32,4 @@ jobs:
           chmod +x start-zap
           chmod +x start-gui-zap
           chmod +x stop-zap
-          cd ./zap/
           echo $pwd
