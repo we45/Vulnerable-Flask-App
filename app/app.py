@@ -95,7 +95,7 @@ def verify_jwt(token):
 
 def insecure_verify(token):
     decoded = jwt.decode(token, verify = False)
-    print decoded
+    print(decoded)
     return True
 
 @app.errorhandler(404)
@@ -122,7 +122,7 @@ def has_no_empty_params(rule):
 def sitemap():
     links = []
     for rule in app.url_map.iter_rules():
-        print rule
+        print(rule)
         if ("GET" in rule.methods or "POST" in rule.methods) and has_no_empty_params(rule):
             if not 'static' in rule.endpoint:
                 url = url_for(rule.endpoint, **(rule.defaults or {}))
@@ -176,7 +176,7 @@ def login():
     '''
     try:
         content = request.json
-        print content
+        print(content)
         username = content['username']
         password = content['password']
         auth_user = User.query.filter_by(username = username, password = password).first()
@@ -257,7 +257,7 @@ def search_customer():
             if content:
                 try:
                     search_term = content['search']
-                    print search_term
+                    print(search_term)
                     str_query = "SELECT first_name, last_name, username FROM customer WHERE username = '%s';" % search_term
                     # mycust = Customer.query.filter_by(username = search_term).first()
                     # return jsonify({'Customer': mycust.username, 'First Name': mycust.first_name}),200
@@ -265,7 +265,7 @@ def search_customer():
                     search_query = db.engine.execute(str_query)
                     for result in search_query:
                         results.append(list(result))
-                    print results
+                    print(results)
                     return jsonify(results),200
                 except Exception as e:
                     template = '''<html>
@@ -295,7 +295,6 @@ def hello():
         rand = random.randint(1, 100)
         fname = secure_filename(f.filename)
         fname = str(rand) + fname  # change file name
-        # print fname
         cwd = os.getcwd()
         file_path = cwd + '/Files/' + fname
         f.save(file_path)  # save file locally
@@ -320,7 +319,6 @@ def yaml_hammer():
         rand = random.randint(1, 100)
         fname = secure_filename(f.filename)
         fname = str(rand) + fname  # change file name
-        # print fname
         cwd = os.getcwd()
         file_path = cwd + '/Files/' + fname
         f.save(file_path)  # save file locally
