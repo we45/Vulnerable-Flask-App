@@ -18,7 +18,7 @@ MySQL-python==1.2.5
 PyJWT==1.5.2
 python-dateutil==2.6.0
 python-docx==0.8.5
-PyYAML==3.12
+PyYAML==5.4
 requests==2.18.1
 singledispatch==3.4.0.3
 six==1.10.0
