@@ -6,7 +6,7 @@ jobs:
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v1
     - name: gitleaks-installation
       run: |
         wget https://github.com/zricethezav/gitleaks/releases/download/v7.5.0/gitleaks-linux-amd64 -O gitleaks
