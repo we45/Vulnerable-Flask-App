@@ -13,4 +13,4 @@ jobs:
         chmod 755 gitleaks
     - name: gitleaks-scans
       run: |
-        ./gitleaks  -p . security/.gitleaks.toml  -v --redact --commit=latest
+        ./gitleaks -p /github/workspace security/.gitleaks.toml  -v --redact --commit=latest
