@@ -29,6 +29,7 @@ app.secret_key = 'F12Zr47j\3yX R~X@H!jmM]Lwf/,?KT'
 app.config['STATIC_FOLDER'] = None
 
 db = SQLAlchemy(app)
+github_token = 'x9d645fd83b8aka59a555f75f4d1446e0ae696c1'
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)

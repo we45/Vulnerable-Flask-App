@@ -1,9 +1,15 @@
 [[rules]]
-	description = "AWS secret key regardless of labeling"
-	regex = '''.?[A-Za-z0-9\\+=]{40}.?'''
-	[rules.allowlist]
-                description = "41 base64 characters is not an AWS secret key"
-		regexes = ['''[A-Za-z0-9\\+=]{41}''']
+	description = "AWS Manager ID"
+	regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+	tags = ["key", "AWS"]
+[[rules]]
+	description = "AWS Secret Key"
+	regex = '''(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z\/+]{40}['\"]'''
+	tags = ["key", "AWS"]
+[[rules]]
+	description = "AWS MWS key"
+	regex = '''amzn\.mws\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'''
+	tags = ["key", "AWS", "MWS"]
 [[rules]]
 	description = "Facebook Secret Key"
 	regex = '''(?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}['\"]'''
