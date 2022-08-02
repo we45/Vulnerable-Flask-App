@@ -8,7 +8,7 @@ WORKDIR /apps/
 
 RUN pip install -U pip setuptools && pip install -r /apps/requirements.txt
 
-EXPOSE 5050
+EXPOSE 8090
 
 ENTRYPOINT ["python"]
 
