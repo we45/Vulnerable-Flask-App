@@ -17,7 +17,7 @@ MarkupSafe==1.0
 MySQL-python==1.2.5
 PyJWT==1.5.2
 python-dateutil==2.6.0
-python-docx==0.8.5
+python-docx==0.8.6
 PyYAML==3.12
 requests==2.18.1
 singledispatch==3.4.0.3
