@@ -22,7 +22,7 @@ PyYAML==3.12
 requests==2.18.1
 singledispatch==3.4.0.3
 six==1.10.0
-SQLAlchemy==1.1.11
+SQLAlchemy==1.2.18
 tornado==4.5.1
 urllib3==1.21.1
 Werkzeug==0.14.1
