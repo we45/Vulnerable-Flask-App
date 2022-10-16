@@ -12,7 +12,7 @@ idna==2.5
 ipaddress==1.0.18
 itsdangerous==0.24
 Jinja2==2.9.6
-lxml==4.2.1
+lxml==4.9.1
 MarkupSafe==1.0
 MySQL-python==1.2.5
 PyJWT==1.5.2
