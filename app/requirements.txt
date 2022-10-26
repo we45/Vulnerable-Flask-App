@@ -19,10 +19,10 @@ PyJWT==1.5.2
 python-dateutil==2.6.0
 python-docx==0.8.5
 PyYAML==3.12
-requests==2.18.1
+requests==2.20
 singledispatch==3.4.0.3
 six==1.10.0
 SQLAlchemy==1.1.11
 tornado==4.5.1
-urllib3==1.21.1
+urllib3==1.26.5
 Werkzeug==0.14.1
