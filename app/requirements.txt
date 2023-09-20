@@ -5,7 +5,7 @@ click==6.7
 Faker==0.7.17
 Flask==0.12.2
 Flask-SQLAlchemy==2.2
-gevent==1.2.2
+gevent==23.9.0
 greenlet==0.4.12
 grequests==0.3.0
 idna==2.5
