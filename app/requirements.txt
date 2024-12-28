@@ -11,7 +11,7 @@ grequests==0.3.0
 idna==2.5
 ipaddress==1.0.18
 itsdangerous==0.24
-Jinja2==2.9.6
+Jinja2==3.1.5
 lxml==4.2.1
 MarkupSafe==1.0
 MySQL-python==1.2.5
