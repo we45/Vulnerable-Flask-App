@@ -1,0 +1,197 @@
+import pytest
+
+def test_command_injection_vulnerability_fixed():
+    # Arrange
+    vulnerable_code = """
+    <html>
+    <head>
+        <title>Website</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+     
+    body{
+        text-align: center;    
+    }
+    h1{
+        font-family: 'Amatic SC', cursive;
+        font-weight: normal;
+        color: #FF4500;
+        font-size: 2.5em;
+    }
+     
+    </style>
+     
+    </head>
+    <body>
+     {% block body %}{% endblock %}
+     
+    </body>
+    </html>
+    """
+
+    patched_code = """
+    <html>
+    <head>
+        <title>Website</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+     
+    body{
+        text-align: center;    
+    }
+    h1{
+        color: #FF4500;
+        font-size: 2.5em;
+    }
+     
+    </style>
+     
+    </head>
+    <body>
+     {% block body %}{% endblock %}
+     
+    </body>
+    </html>
+    """
+
+    # Act
+    result = pytest.run(vulnerable_code)
+
+    # Assert
+    assert result.returncode == 0
+    assert result.stdout == patched_code
+
+def test_command_injection_vulnerability_regression():
+    # Arrange
+    vulnerable_code = """
+    <html>
+    <head>
+        <title>Website</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+     
+    body{
+        text-align: center;    
+    }
+    h1{
+        font-family: 'Amatic SC', cursive;
+        font-weight: normal;
+        color: #FF4500;
+        font-size: 2.5em;
+    }
+     
+    </style>
+     
+    </head>
+    <body>
+     {% block body %}{% endblock %}
+     
+    </body>
+    </html>
+    """
+
+    # Act
+    result = pytest.run(vulnerable_code)
+
+    # Assert
+    assert result.returncode == 0
+    assert result.stdout == vulnerable_code
+
+def test_command_injection_vulnerability_boundary():
+    # Arrange
+    vulnerable_code = """
+    <html>
+    <head>
+        <title>Website</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+     
+    body{
+        text-align: center;    
+    }
+    h1{
+        font-family: 'Amatic SC', cursive;
+        font-weight: normal;
+        color: #FF4500;
+        font-size: 2.5em;
+    }
+     
+    </style>
+     
+    </head>
+    <body>
+     {% block body %}{% endblock %}
+     
+    </body>
+    </html>
+    """
+
+    # Act
+    result = pytest.run(vulnerable_code)
+
+    # Assert
+    assert result.returncode == 0
+    assert result.stdout == vulnerable_code
+
+def test_command_injection_vulnerability_attack():
+    # Arrange
+    vulnerable_code = """
+    <html>
+    <head>
+        <title>Website</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+     
+    body{
+        text-align: center;    
+    }
+    h1{
+        font-family: 'Amatic SC', cursive;
+        font-weight: normal;
+        color: #FF4500;
+        font-size: 2.5em;
+    }
+     
+    </style>
+     
+    </head>
+    <body>
+     {% block body %}{% endblock %}
+     
+    </body>
+    </html>
+    """
+
+    attack_code = """
+    <html>
+    <head>
+        <title>Website</title>
+    <style>
+    @import url(http://fonts.googleapis.com/css?family=Amatic+SC:700);
+     
+    body{
+        text-align: center;    
+    }
+    h1{
+        font-family: 'Amatic SC', cursive;
+        font-weight: normal;
+        color: #FF4500;
+        font-size: 2.5em;
+    }
+     
+    </style>
+     
+    </head>
+    <body>
+     {% block body %}{% endblock %}
+     
+    </body>
+    </html>
+    """
+
+    # Act
+    result = pytest.run(vulnerable_code)
+
+    # Assert
+    assert result.returncode == 0
+    assert result.stdout == attack_code
