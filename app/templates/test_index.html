@@ -1,0 +1,86 @@
+import pytest
+from app.templates.index import IndexTemplate
+
+# Attack tests
+
+def test_path_traversal_attack(mocker):
+    # Set up a mock for the IndexTemplate class
+    mocker.patch('app.templates.index.IndexTemplate')
+
+    # Create a malicious payload that exploits the potential path traversal vulnerability
+    payload = '../../etc/passwd'
+
+    # Call the IndexTemplate class with the malicious payload
+    IndexTemplate(payload)
+
+    # Verify that the IndexTemplate class raises a ValueError
+    assert IndexTemplate.called_with(payload)
+
+# Regression tests
+
+def test_normal_input_regression(mocker):
+    # Set up a mock for the IndexTemplate class
+    mocker.patch('app.templates.index.IndexTemplate')
+
+    # Create a normal input that is not malicious
+    payload = 'https://example.com'
+
+    # Call the IndexTemplate class with the normal input
+    IndexTemplate(payload)
+
+    # Verify that the IndexTemplate class does not raise any errors
+    assert IndexTemplate.called_with(payload)
+
+# Boundary tests
+
+def test_empty_string_boundary(mocker):
+    # Set up a mock for the IndexTemplate class
+    mocker.patch('app.templates.index.IndexTemplate')
+
+    # Create an empty string as a payload
+    payload = ''
+
+    # Call the IndexTemplate class with the empty string
+    IndexTemplate(payload)
+
+    # Verify that the IndexTemplate class raises a ValueError
+    assert IndexTemplate.called_with(payload)
+
+def test_very_long_input_boundary(mocker):
+    # Set up a mock for the IndexTemplate class
+    mocker.patch('app.templates.index.IndexTemplate')
+
+    # Create a very long input that is not malicious
+    payload = 'a' * 10000
+
+    # Call the IndexTemplate class with the very long input
+    IndexTemplate(payload)
+
+    # Verify that the IndexTemplate class does not raise any errors
+    assert IndexTemplate.called_with(payload)
+
+def test_null_byte_boundary(mocker):
+    # Set up a mock for the IndexTemplate class
+    mocker.patch('app.templates.index.IndexTemplate')
+
+    # Create a null byte as a payload
+    payload = '\x00'
+
+    # Call the IndexTemplate class with the null byte
+    IndexTemplate(payload)
+
+    # Verify that the IndexTemplate class raises a ValueError
+    assert IndexTemplate.called_with(payload)
+
+def test_unicode_boundary(mocker):
+    # Set up a mock for the IndexTemplate class
+    mocker.patch('app.templates.index.IndexTemplate')
+
+    # Create a unicode string as a payload
+    payload = '😊'
+
+    # Call the IndexTemplate class with the unicode string
+    IndexTemplate(payload)
+
+    # Verify that the IndexTemplate class raises a ValueError
+    assert IndexTemplate.called_with(payload)
