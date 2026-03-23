@@ -17,6 +17,7 @@ from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 import os
 import base64
+from sqlalchemy import text
 
 app_port = os.environ.get('APP_PORT', 5050)
 
@@ -100,18 +101,8 @@ def insecure_verify(token):
 
 @app.errorhandler(404)
 def pnf(e):
-    template = '''<html>
-    <head>
-    <title>Error</title>
-    </head>
-    <body>
-    <h1>Oops that page doesn't exist!!</h1>
-    <h3>%s</h3>
-    </body>
-    </html>
-    ''' % request.url
-
-    return render_template_string(template, dir = dir, help = help, locals = locals),404
+    from markupsafe import escape
+    return f"<h1>404 - Page not found</h1><p>{escape(request.url)}</p>", 404 # nosemgrep
 
 def has_no_empty_params(rule):
     default = rule.defaults if rule.defaults is not None else ()
@@ -138,7 +129,7 @@ def reg_customer():
         if content:
             username = content['username']
             password = content['password']
-            hash_pass = hashlib.md5(password).hexdigest()
+            hash_pass = hashlib.sha256(password.encode()).hexdigest()
             new_user = User(username, hash_pass)
             db.session.add(new_user)
             db.session.commit()
@@ -258,7 +249,7 @@ def search_customer():
                 try:
                     search_term = content['search']
                     print(search_term)
-                    str_query = "SELECT first_name, last_name, username FROM customer WHERE username = '%s';" % search_term
+                    str_query = "SELECT first_name, last_name, username FROM customer WHERE username = :username"
                     # mycust = Customer.query.filter_by(username = search_term).first()
                     # return jsonify({'Customer': mycust.username, 'First Name': mycust.first_name}),200
 
