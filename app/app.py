@@ -7,7 +7,7 @@ import hashlib
 import datetime
 import os
 from faker import Faker
-import random
+import secrets
 from werkzeug.utils import secure_filename
 from docx import Document
 import yaml
@@ -23,9 +23,9 @@ app_port = os.environ.get('APP_PORT', 5050)
 
 app = Flask(__name__, template_folder='templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SECRET_KEY_HMAC'] = 'secret'
-app.config['SECRET_KEY_HMAC_2'] = 'am0r3C0mpl3xK3y'
-app.secret_key = 'F12Zr47j\3yX R~X@H!jmM]Lwf/,?KT'
+app.config['SECRET_KEY_HMAC'] = secrets.token_urlsafe(16)
+app.config['SECRET_KEY_HMAC_2'] = secrets.token_urlsafe(16)
+app.secret_key = secrets.token_urlsafe(16)
 app.config['STATIC_FOLDER'] = None
 
 db = SQLAlchemy(app)
@@ -60,7 +60,7 @@ def setup_users():
     if not User.query.first():
         user = User()
         user.username = 'admin'
-        user.password = 'admin123'
+        user.password = hashlib.sha256('admin123'.encode()).hexdigest()
         db.session.add(user)
         db.session.commit()
     if not Customer.query.first():
@@ -138,14 +138,14 @@ def reg_customer():
         if content:
             username = content['username']
             password = content['password']
-            hash_pass = hashlib.md5(password).hexdigest()
+            hash_pass = hashlib.sha256(password.encode()).hexdigest()
             new_user = User(username, hash_pass)
             db.session.add(new_user)
             db.session.commit()
             user_created = 'User: {0} has been created'.format(username)
             return jsonify({'Created': user_created}),200
     except Exception as e:
-        return jsonify({'Error': str(e.message)}),404
+        return jsonify({'Error': str(e)}),404
 
 @app.route('/register/customer', methods = ['POST'])
 def reg_user():
@@ -164,7 +164,7 @@ def reg_user():
             user_created = 'Customer: {0} has been created'.format(username)
             return jsonify({'Created': user_created}),200
     except Exception as e:
-        return jsonify({'Error': str(e.message)}),404
+        return jsonify({'Error': str(e)}),404
 
 
 @app.route('/login', methods = ['POST'])
@@ -179,8 +179,8 @@ def login():
         print(content)
         username = content['username']
         password = content['password']
-        auth_user = User.query.filter_by(username = username, password = password).first()
-        if auth_user:
+        auth_user = User.query.filter_by(username = username).first()
+        if auth_user and auth_user.password == hashlib.sha256(password.encode()).hexdigest():
             auth_token = jwt.encode({'user': username, 'exp': get_exp_date(), 'nbf': datetime.datetime.utcnow(), 'iss': 'we45', 'iat': datetime.datetime.utcnow()}, app.config['SECRET_KEY_HMAC'], algorithm='HS256')
             resp = Response(json.dumps({'Authenticated': True, "User": username}))
             #resp.set_cookie('SESSIONID', auth_token)
@@ -258,13 +258,11 @@ def search_customer():
                 try:
                     search_term = content['search']
                     print(search_term)
-                    str_query = "SELECT first_name, last_name, username FROM customer WHERE username = '%s';" % search_term
-                    # mycust = Customer.query.filter_by(username = search_term).first()
-                    # return jsonify({'Customer': mycust.username, 'First Name': mycust.first_name}),200
-
-                    search_query = db.engine.execute(str_query)
-                    for result in search_query:
-                        results.append(list(result))
+                    mycust = Customer.query.filter_by(username = search_term).all()
+                    for cust in mycust:
+                        results.append({'id': cust.id, 'firstname': cust.first_name,
+                                 'lastname': cust.last_name, 'email': cust.email,
+                                 'cc_num': cust.ccn, 'username': cust.username})
                     print(results)
                     return jsonify(results),200
                 except Exception as e:
@@ -292,7 +290,7 @@ def hello():
     if request.method == 'POST':
 
         f = request.files['file']
-        rand = random.randint(1, 100)
+        rand = secrets.randbelow(1000)
         fname = secure_filename(f.filename)
         fname = str(rand) + fname  # change file name
         cwd = os.getcwd()
@@ -316,7 +314,7 @@ def yaml_upload():
 def yaml_hammer():
     if request.method == "POST":
         f = request.files['file']
-        rand = random.randint(1, 100)
+        rand = secrets.randbelow(1000)
         fname = secure_filename(f.filename)
         fname = str(rand) + fname  # change file name
         cwd = os.getcwd()
@@ -326,7 +324,7 @@ def yaml_hammer():
         with open(file_path, 'r') as yfile:
             y = yfile.read()
 
-        ydata = yaml.load(y)
+        ydata = yaml.safe_load(y)
 
     return render_template('view.html', name = json.dumps(ydata))
 
