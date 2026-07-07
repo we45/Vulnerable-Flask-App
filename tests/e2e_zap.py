@@ -3,6 +3,7 @@ from zapv2 import ZAPv2 as ZAP
 import time
 import datetime
 from os import getcwd
+import os
 
 # Test Automation Part of the Script
 
@@ -12,11 +13,11 @@ proxies = {
     'https': 'http://127.0.0.1:8090',
 }
 
-auth_dict = {'username': 'admin', 'password': 'admin123'}
+auth_dict = {'username': 'admin', 'password': os.environ.get('ADMIN_PASSWORD')}
 
 login = requests.post(target_url + '/login',
-                      proxies=proxies, json=auth_dict, verify=False)
-
+                      proxies=proxies, json=auth_dict, verify=os.environ.get('VERIFY_SSL', 'True').lower() == 'true',
+                      timeout=int(os.environ.get('REQUEST_TIMEOUT', 10)))
 
 if login.status_code == 200:  # if login is successful
     auth_token = login.headers['Authorization']
@@ -26,7 +27,8 @@ if login.status_code == 200:  # if login is successful
     # GET Customer by ID
 
     get_cust_id = requests.get(
-        target_url + '/get/2', proxies=proxies, headers=auth_header, verify=False)
+        target_url + '/get/2', proxies=proxies, headers=auth_header, verify=os.environ.get('VERIFY_SSL', 'True').lower() == 'true',
+        timeout=int(os.environ.get('REQUEST_TIMEOUT', 10)))
     if get_cust_id.status_code == 200:
         print("Get Customer by ID Response")
         print(get_cust_id.json())
@@ -34,7 +36,8 @@ if login.status_code == 200:  # if login is successful
 
     post = {'id': 2}
     fetch_customer_post = requests.post(
-        target_url + '/fetch/customer', json=post, proxies=proxies, headers=auth_header, verify=False)
+        target_url + '/fetch/customer', json=post, proxies=proxies, headers=auth_header, verify=os.environ.get('VERIFY_SSL', 'True').lower() == 'true',
+        timeout=int(os.environ.get('REQUEST_TIMEOUT', 10)))
     if fetch_customer_post.status_code == 200:
         print("Fetch Customer POST Response")
         print(fetch_customer_post.json())
@@ -42,7 +45,8 @@ if login.status_code == 200:  # if login is successful
 
     search = {'search': 'dleon'}
     search_customer_username = requests.post(
-        target_url + '/search', json=search, proxies=proxies, headers=auth_header, verify=False)
+        target_url + '/search', json=search, proxies=proxies, headers=auth_header, verify=os.environ.get('VERIFY_SSL', 'True').lower() == 'true',
+        timeout=int(os.environ.get('REQUEST_TIMEOUT', 10)))
     if search_customer_username.status_code == 200:
         print("Search Customer POST Response")
         print(search_customer_username.json())
