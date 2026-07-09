@@ -11,6 +11,7 @@ import random
 from werkzeug.utils import secure_filename
 from docx import Document
 import yaml
+import secrets
 
 from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
@@ -20,12 +21,11 @@ import base64
 
 app_port = os.environ.get('APP_PORT', 5050)
 
-
 app = Flask(__name__, template_folder='templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-app.config['SECRET_KEY_HMAC'] = 'secret'
-app.config['SECRET_KEY_HMAC_2'] = 'am0r3C0mpl3xK3y'
-app.secret_key = 'F12Zr47j\3yX R~X@H!jmM]Lwf/,?KT'
+app.config['SECRET_KEY_HMAC'] = os.environ.get('SECRET_KEY_HMAC')
+app.config['SECRET_KEY_HMAC_2'] = os.environ.get('SECRET_KEY_HMAC_2')
+app.secret_key = os.environ.get('SECRET_KEY')
 app.config['STATIC_FOLDER'] = None
 
 db = SQLAlchemy(app)
@@ -60,7 +60,7 @@ def setup_users():
     if not User.query.first():
         user = User()
         user.username = 'admin'
-        user.password = 'admin123'
+        user.password = os.environ.get('ADMIN_PASSWORD')
         db.session.add(user)
         db.session.commit()
     if not Customer.query.first():
@@ -94,9 +94,16 @@ def verify_jwt(token):
         return False
 
 def insecure_verify(token):
-    decoded = jwt.decode(token, verify = False)
-    print(decoded)
-    return True
+    try:
+        decoded = jwt.decode(token, app.config['SECRET_KEY_HMAC'], verify=True, issuer = 'we45', leeway=10, algorithms=['HS256'])
+        print(decoded)
+        return True
+    except DecodeError:
+        print("Error in decoding token")
+        return False
+    except MissingRequiredClaimError as e:
+        print('Claim required is missing: {0}'.format(e))
+        return False
 
 @app.errorhandler(404)
 def pnf(e):
@@ -106,12 +113,11 @@ def pnf(e):
     </head>
     <body>
     <h1>Oops that page doesn't exist!!</h1>
-    <h3>%s</h3>
+    <h3>{{ error }}</h3>
     </body>
     </html>
-    ''' % request.url
-
-    return render_template_string(template, dir = dir, help = help, locals = locals),404
+    '''
+    return render_template_string(template, error=request.url),404
 
 def has_no_empty_params(rule):
     default = rule.defaults if rule.defaults is not None else ()
@@ -138,14 +144,15 @@ def reg_customer():
         if content:
             username = content['username']
             password = content['password']
-            hash_pass = hashlib.md5(password).hexdigest()
-            new_user = User(username, hash_pass)
+            salt = os.urandom(16)
+            hash_pass = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
+            new_user = User(username, hash_pass.hex())
             db.session.add(new_user)
             db.session.commit()
             user_created = 'User: {0} has been created'.format(username)
             return jsonify({'Created': user_created}),200
     except Exception as e:
-        return jsonify({'Error': str(e.message)}),404
+        return jsonify({'Error': str(e)}),404
 
 @app.route('/register/customer', methods = ['POST'])
 def reg_user():
@@ -164,7 +171,7 @@ def reg_user():
             user_created = 'Customer: {0} has been created'.format(username)
             return jsonify({'Created': user_created}),200
     except Exception as e:
-        return jsonify({'Error': str(e.message)}),404
+        return jsonify({'Error': str(e)}),404
 
 
 @app.route('/login', methods = ['POST'])
@@ -179,15 +186,21 @@ def login():
         print(content)
         username = content['username']
         password = content['password']
-        auth_user = User.query.filter_by(username = username, password = password).first()
+        auth_user = User.query.filter_by(username = username).first()
         if auth_user:
-            auth_token = jwt.encode({'user': username, 'exp': get_exp_date(), 'nbf': datetime.datetime.utcnow(), 'iss': 'we45', 'iat': datetime.datetime.utcnow()}, app.config['SECRET_KEY_HMAC'], algorithm='HS256')
-            resp = Response(json.dumps({'Authenticated': True, "User": username}))
-            #resp.set_cookie('SESSIONID', auth_token)
-            resp.headers['Authorization'] = "{0}".format(auth_token)
-            resp.status_code = 200
-            resp.mimetype = 'application/json'
-            return resp
+            stored_password = auth_user.password
+            salt = stored_password[:32]
+            hash_pass = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), bytes.fromhex(salt), 100000).hex()
+            if hash_pass == stored_password[32:]:
+                auth_token = jwt.encode({'user': username, 'exp': get_exp_date(), 'nbf': datetime.datetime.utcnow(), 'iss': 'we45', 'iat': datetime.datetime.utcnow()}, app.config['SECRET_KEY_HMAC'], algorithm='HS256')
+                resp = Response(json.dumps({'Authenticated': True, "User": username}))
+                #resp.set_cookie('SESSIONID', auth_token)
+                resp.headers['Authorization'] = "{0}".format(auth_token)
+                resp.status_code = 200
+                resp.mimetype = 'application/json'
+                return resp
+            else:
+                return jsonify({'Error': 'No User here...'}),404
         else:
             return jsonify({'Error': 'No User here...'}),404
     except:
@@ -224,7 +237,7 @@ def get_customer(cust_id):
     if not token:
         return jsonify({'Error': 'Not Authenticated!'}), 403
     else:
-        if not insecure_verify(token):
+        if not verify_jwt(token):
             return jsonify({'Error': 'Invalid Token'}), 403
         else:
             if cust_id:
@@ -258,11 +271,7 @@ def search_customer():
                 try:
                     search_term = content['search']
                     print(search_term)
-                    str_query = "SELECT first_name, last_name, username FROM customer WHERE username = '%s';" % search_term
-                    # mycust = Customer.query.filter_by(username = search_term).first()
-                    # return jsonify({'Customer': mycust.username, 'First Name': mycust.first_name}),200
-
-                    search_query = db.engine.execute(str_query)
+                    search_query = db.engine.execute("SELECT first_name, last_name, username FROM customer WHERE username = :search_term", {"search_term": search_term})
                     for result in search_query:
                         results.append(list(result))
                     print(results)
@@ -274,11 +283,11 @@ def search_customer():
                         </head>
                         <body>
                         <h1>Oops Error Occurred</h1>
-                        <h3>%s</h3>
+                        <h3>{{ error }}</h3>
                         </body>
                         </html>
-                        ''' % str(e)
-                    return render_template_string(template, dir=dir, help=help, locals=locals), 404
+                        '''
+                    return render_template_string(template, error=str(e)), 404
 
 
 @app.route("/xxe")
@@ -292,7 +301,7 @@ def hello():
     if request.method == 'POST':
 
         f = request.files['file']
-        rand = random.randint(1, 100)
+        rand = secrets.randbelow(1000)
         fname = secure_filename(f.filename)
         fname = str(rand) + fname  # change file name
         cwd = os.getcwd()
@@ -316,7 +325,7 @@ def yaml_upload():
 def yaml_hammer():
     if request.method == "POST":
         f = request.files['file']
-        rand = random.randint(1, 100)
+        rand = secrets.randbelow(1000)
         fname = secure_filename(f.filename)
         fname = str(rand) + fname  # change file name
         cwd = os.getcwd()
@@ -326,7 +335,7 @@ def yaml_hammer():
         with open(file_path, 'r') as yfile:
             y = yfile.read()
 
-        ydata = yaml.load(y)
+        ydata = yaml.safe_load(y)
 
     return render_template('view.html', name = json.dumps(ydata))
 
